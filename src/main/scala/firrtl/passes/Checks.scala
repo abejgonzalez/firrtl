@@ -482,7 +482,7 @@ object CheckFlows extends Pass {
     case SourceFlow => "source"
     case SinkFlow => "sink"
     case UnknownFlow => "unknown"
-    case DuplexFlow => "sourceOrSink"
+    case DuplexFlow => "duplex"
   }
 
   class WrongFlow(info:Info, mname: String, expr: String, wrong: Flow, right: Flow) extends PassException(
@@ -575,4 +575,21 @@ object CheckFlows extends Pass {
     errors.trigger()
     c
   }
+}
+
+@deprecated("Use 'CheckFlows'. This will be removed in 1.4", "1.3")
+object CheckGenders {
+
+  implicit def toStr(g: Gender): String = g match {
+    case MALE => "source"
+    case FEMALE => "sink"
+    case UNKNOWNGENDER => "unknown"
+    case BIGENDER => "sourceOrSink"
+  }
+
+  def run(c: Circuit): Circuit = CheckGenders.run(c)
+
+  @deprecated("Use 'CheckFlows.WrongFlow'. This will be removed in 1.4", "1.3")
+  class WrongGender(info:Info, mname: String, expr: String, wrong: Flow, right: Flow) extends PassException(
+    s"$info: [module $mname]  Expression $expr is used as a $wrong but can only be used as a $right.")
 }

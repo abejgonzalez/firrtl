@@ -12,4 +12,27 @@ package object firrtl {
 
   @deprecated("Use firrtl.stage.TargetDirAnnotation", "1.2")
   val TargetDirAnnotation = firrtl.options.TargetDirAnnotation
+
+  @deprecated("Use Flow instead of Gender", "1.3")
+  trait Gender
+
+  @deprecated("Use SourceFlow instead of MALE", "1.3")
+  case object MALE extends Gender
+
+  @deprecated("Use SinkFlow instead of FEMALE", "1.3")
+  case object FEMALE extends Gender
+
+  @deprecated("Use DuplexFlow instead of BIGENDER", "1.3")
+  case object BIGENDER extends Gender
+
+  @deprecated("Use UnknownFlow instead of UNKNOWNGENDER", "1.3")
+  case object UNKNOWNGENDER extends Gender
+
+  @deprecated("Please migrate from 'Gender' to 'Flow' This implicit conversion will be removed in 1.4", "1.3")
+  implicit def genderToFlow(gender: Gender): Flow = gender match {
+    case MALE          => SourceFlow
+    case FEMALE        => SinkFlow
+    case BIGENDER      => DuplexFlow
+    case UNKNOWNGENDER => UnknownFlow
+  }
 }

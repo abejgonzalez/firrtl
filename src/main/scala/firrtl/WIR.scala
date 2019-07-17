@@ -25,7 +25,18 @@ case object SinkFlow extends Flow
 case object DuplexFlow extends Flow
 case object UnknownFlow extends Flow
 
-case class WRef(name: String, tpe: Type, kind: Kind, flow: Flow) extends Expression {
+private[firrtl] trait GenderFromFlow { this: Expression =>
+  val flow: Flow
+  @deprecated("Migrate from 'Gender' to 'Flow'. This will be removed in 1.4", "1.3")
+  def gender: Gender = flow match {
+    case SourceFlow  => MALE
+    case SinkFlow    => FEMALE
+    case DuplexFlow  => BIGENDER
+    case UnknownFlow => UNKNOWNGENDER
+  }
+}
+
+case class WRef(name: String, tpe: Type, kind: Kind, flow: Flow) extends Expression with GenderFromFlow {
   def serialize: String = name
   def mapExpr(f: Expression => Expression): Expression = this
   def mapType(f: Type => Type): Expression = this.copy(tpe = f(tpe))
@@ -50,7 +61,7 @@ object WRef {
   /** Creates a WRef from an arbitrary string name */
   def apply(n: String, t: Type = UnknownType, k: Kind = ExpKind): WRef = new WRef(n, t, k, UnknownFlow)
 }
-case class WSubField(expr: Expression, name: String, tpe: Type, flow: Flow) extends Expression {
+case class WSubField(expr: Expression, name: String, tpe: Type, flow: Flow) extends Expression with GenderFromFlow {
   def serialize: String = s"${expr.serialize}.$name"
   def mapExpr(f: Expression => Expression): Expression = this.copy(expr = f(expr))
   def mapType(f: Type => Type): Expression = this.copy(tpe = f(tpe))
@@ -63,7 +74,7 @@ object WSubField {
   def apply(expr: Expression, n: String): WSubField = new WSubField(expr, n, field_type(expr.tpe, n), UnknownFlow)
   def apply(expr: Expression, name: String, tpe: Type): WSubField = new WSubField(expr, name, tpe, UnknownFlow)
 }
-case class WSubIndex(expr: Expression, value: Int, tpe: Type, flow: Flow) extends Expression {
+case class WSubIndex(expr: Expression, value: Int, tpe: Type, flow: Flow) extends Expression with GenderFromFlow {
   def serialize: String = s"${expr.serialize}[$value]"
   def mapExpr(f: Expression => Expression): Expression = this.copy(expr = f(expr))
   def mapType(f: Type => Type): Expression = this.copy(tpe = f(tpe))
@@ -72,7 +83,7 @@ case class WSubIndex(expr: Expression, value: Int, tpe: Type, flow: Flow) extend
   def foreachType(f: Type => Unit): Unit = f(tpe)
   def foreachWidth(f: Width => Unit): Unit = Unit
 }
-case class WSubAccess(expr: Expression, index: Expression, tpe: Type, flow: Flow) extends Expression {
+case class WSubAccess(expr: Expression, index: Expression, tpe: Type, flow: Flow) extends Expression with GenderFromFlow {
   def serialize: String = s"${expr.serialize}[${index.serialize}]"
   def mapExpr(f: Expression => Expression): Expression = this.copy(expr = f(expr), index = f(index))
   def mapType(f: Type => Type): Expression = this.copy(tpe = f(tpe))
