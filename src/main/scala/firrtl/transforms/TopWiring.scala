@@ -7,7 +7,7 @@ import firrtl.ir._
 import firrtl.passes.{Pass,
       InferTypes,
       ResolveKinds,
-      ResolveGenders
+      ResolveFlows
       }
 import firrtl.annotations._
 import firrtl.Mappers._
@@ -226,7 +226,7 @@ class TopWiringTransform extends Transform {
     val passes = Seq(
       InferTypes,
       ResolveKinds,
-      ResolveGenders
+      ResolveFlows
     )
     passes.foldLeft(circuit) { case (c: Circuit, p: Pass) => p.run(c) }
   }
